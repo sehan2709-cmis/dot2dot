@@ -172,12 +172,27 @@ flutter build web
 ## 커스터마이징
 
 ### 색상 변경
-`lib/main.dart`에서 색상 테마를 변경할 수 있습니다:
+현재는 무채색(회색 계열) 디자인을 사용하고 있습니다. 색상을 변경하려면:
+
+`lib/main.dart`에서 색상 테마를 변경:
 ```dart
 colorScheme: ColorScheme.fromSeed(
-  seedColor: const Color(0xFF6B4CE6),  // 메인 색상
+  seedColor: Colors.grey,  // 메인 색상
   brightness: Brightness.light,
+  primary: Colors.grey[900]!,  // 주요 색상
+  secondary: Colors.grey[700]!,  // 보조 색상
 ),
+```
+
+각 화면의 색상도 수정 가능:
+- 홈 화면: `lib/screens/home_screen.dart`
+- 테스트 화면: `lib/screens/test_screen.dart`
+- 결과 화면: `lib/screens/result_screen.dart`
+
+### 페이지당 질문 수 변경
+`lib/screens/test_screen.dart`에서:
+```dart
+static const int questionsPerPage = 5;  // 원하는 숫자로 변경
 ```
 
 ### 질문 추가/수정
@@ -189,10 +204,14 @@ colorScheme: ColorScheme.fromSeed(
 ## 기능
 
 - ✅ 54개 질문을 통한 성향 분석
+- ✅ **한 페이지당 5개 질문 표시** (총 11페이지)
 - ✅ 1~5 척도의 직관적인 답변 시스템
-- ✅ 진행률 표시
+- ✅ 진행률 표시 및 답변 완료 카운터
 - ✅ 이전/다음 네비게이션
 - ✅ 반응형 디자인 (모바일/태블릿/데스크톱)
+- ✅ **무채색 미니멀 디자인**
+- ✅ **부드러운 페이드/슬라이드 애니메이션**
+- ✅ 깔끔한 UI (숫자 동그라미 제거)
 - ✅ 상세한 결과 페이지
 - ✅ 텍스트 파일 기반의 쉬운 콘텐츠 관리
 
@@ -202,17 +221,6 @@ colorScheme: ColorScheme.fromSeed(
 
 ## 참고사항
 
-- 모든 질문 파일(18개)과 결과 파일(27개)이 포함되어 있습니다.
+- 현재 프로젝트에는 샘플 질문과 결과 파일이 포함되어 있습니다.
+- 실제 사용을 위해서는 모든 질문 파일(18개)과 결과 파일(27개)을 작성해야 합니다.
 - 질문과 결과는 txt 파일로 관리되므로, 코드 수정 없이 내용을 쉽게 변경할 수 있습니다.
-- 실제 운영을 위해서는 각 결과 파일의 내용을 더 상세하게 작성하는 것을 권장합니다.
-
-## 문제 해결
-
-### 질문이 로드되지 않을 때
-1. `flutter clean` 명령 실행
-2. `flutter pub get` 다시 실행
-3. 앱 재시작
-
-### 웹에서 assets 로딩 에러
-- pubspec.yaml에 모든 assets 파일이 명시적으로 등록되어 있는지 확인
-- 파일 경로와 이름이 정확한지 확인

@@ -14,15 +14,23 @@ class Dot2DotApp extends StatelessWidget {
       title: 'Dot2Dot - 인간관계 성향 분석',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        primarySwatch: Colors.blue,
-        fontFamily: 'NotoSans',
         useMaterial3: true,
         colorScheme: ColorScheme.fromSeed(
-          seedColor: const Color(0xFF6B4CE6),
+          seedColor: Colors.grey,
           brightness: Brightness.light,
+          primary: Colors.grey[900]!,
+          secondary: Colors.grey[700]!,
         ),
+        scaffoldBackgroundColor: Colors.grey[50],
+        cardTheme: CardTheme(
+          elevation: 0,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+        ),
+        fontFamily: 'NotoSans',
       ),
-      home: HomeScreen(),
+      home: const HomeScreen(),
     );
   }
 }
