@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../services/type_name_service.dart';
+import '../constants/colors.dart';
 import 'type_detail_screen.dart';
 
 class TypesScreen extends StatefulWidget {
@@ -12,9 +13,9 @@ class TypesScreen extends StatefulWidget {
 class _TypesScreenState extends State<TypesScreen> with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _fadeAnimation;
-  String selectedPart1 = 'ALL'; // ALL, A, B, C
-  String selectedPart2 = 'ALL'; // ALL, 가, 나, 다
-  String selectedPart3 = 'ALL'; // ALL, 1, 2, 3
+  String selectedPart1 = 'ALL';
+  String selectedPart2 = 'ALL';
+  String selectedPart3 = 'ALL';
 
   @override
   void initState() {
@@ -103,7 +104,6 @@ class _TypesScreenState extends State<TypesScreen> with SingleTickerProviderStat
                           ),
                           const SizedBox(height: 20),
                           
-                          // 관계 범위 필터
                           _buildFilterSection(
                             '관계 범위',
                             ['ALL', 'A', 'B', 'C'],
@@ -119,7 +119,6 @@ class _TypesScreenState extends State<TypesScreen> with SingleTickerProviderStat
                           
                           const SizedBox(height: 16),
                           
-                          // 친밀감 스타일 필터
                           _buildFilterSection(
                             '친밀감 스타일',
                             ['ALL', '가', '나', '다'],
@@ -135,7 +134,6 @@ class _TypesScreenState extends State<TypesScreen> with SingleTickerProviderStat
                           
                           const SizedBox(height: 16),
                           
-                          // 갈등 대처 필터
                           _buildFilterSection(
                             '갈등 대처',
                             ['ALL', '1', '2', '3'],
@@ -155,7 +153,6 @@ class _TypesScreenState extends State<TypesScreen> with SingleTickerProviderStat
                   
                   const SizedBox(height: 32),
                   
-                  // 결과 카운트
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 4),
                     child: Text(
@@ -170,7 +167,6 @@ class _TypesScreenState extends State<TypesScreen> with SingleTickerProviderStat
                   
                   const SizedBox(height: 16),
                   
-                  // 유형 그리드
                   LayoutBuilder(
                     builder: (context, constraints) {
                       int crossAxisCount;
@@ -187,7 +183,7 @@ class _TypesScreenState extends State<TypesScreen> with SingleTickerProviderStat
                         physics: const NeverScrollableScrollPhysics(),
                         gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                           crossAxisCount: crossAxisCount,
-                          childAspectRatio: 1.2,
+                          childAspectRatio: 0.85,
                           crossAxisSpacing: 16,
                           mainAxisSpacing: 16,
                         ),
@@ -233,6 +229,22 @@ class _TypesScreenState extends State<TypesScreen> with SingleTickerProviderStat
           runSpacing: 8,
           children: options.map((option) {
             final isSelected = selected == option;
+            Color? bgColor;
+            Color? textColor;
+            
+            if (isSelected && option != 'ALL') {
+              if (option == 'A') {
+                bgColor = AppColors.socialRedMedium;
+                textColor = AppColors.socialRedAccent;
+              } else if (option == 'B') {
+                bgColor = AppColors.selectiveBlueMedium;
+                textColor = AppColors.selectiveBlueAccent;
+              } else if (option == 'C') {
+                bgColor = AppColors.balancedGreenMedium;
+                textColor = AppColors.balancedGreenAccent;
+              }
+            }
+            
             return InkWell(
               onTap: () => onSelect(option),
               borderRadius: BorderRadius.circular(20),
@@ -240,10 +252,14 @@ class _TypesScreenState extends State<TypesScreen> with SingleTickerProviderStat
                 duration: const Duration(milliseconds: 200),
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                 decoration: BoxDecoration(
-                  color: isSelected ? Colors.grey[800] : Colors.grey[100],
+                  color: isSelected 
+                      ? (bgColor ?? Colors.grey[800])
+                      : Colors.grey[100],
                   borderRadius: BorderRadius.circular(20),
                   border: Border.all(
-                    color: isSelected ? Colors.grey[800]! : Colors.grey[300]!,
+                    color: isSelected 
+                        ? (textColor ?? Colors.grey[800]!)
+                        : Colors.grey[300]!,
                     width: 1,
                   ),
                 ),
@@ -252,7 +268,9 @@ class _TypesScreenState extends State<TypesScreen> with SingleTickerProviderStat
                   style: TextStyle(
                     fontSize: 13,
                     fontWeight: FontWeight.w500,
-                    color: isSelected ? Colors.white : Colors.grey[700],
+                    color: isSelected 
+                        ? (textColor ?? Colors.white)
+                        : Colors.grey[700],
                   ),
                 ),
               ),
@@ -264,6 +282,12 @@ class _TypesScreenState extends State<TypesScreen> with SingleTickerProviderStat
   }
 
   Widget _buildTypeCard(TypeInfo type) {
+    final part1 = type.code[0];
+    final part2 = type.code[1];
+    final part3 = type.code[2];
+    final typeColor = AppColors.getTypeColor(type.code).withAlpha(0);
+    final accentColor = AppColors.getTypeAccentColor(type.code);
+    
     return TweenAnimationBuilder<double>(
       duration: const Duration(milliseconds: 400),
       tween: Tween(begin: 0.0, end: 1.0),
@@ -286,12 +310,29 @@ class _TypesScreenState extends State<TypesScreen> with SingleTickerProviderStat
           );
         },
         borderRadius: BorderRadius.circular(16),
-        child: Card(
-          elevation: 0,
-          color: Colors.white,
-          shape: RoundedRectangleBorder(
+        child: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomRight,
+              colors: [
+                Colors.white,
+                typeColor,
+                Colors.white,
+              ],
+            ),
             borderRadius: BorderRadius.circular(16),
-            side: BorderSide(color: Colors.grey[300]!, width: 1),
+            border: Border.all(
+              color: accentColor.withOpacity(0.02),
+              width: 1,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: accentColor.withOpacity(0.02),
+                blurRadius: 10,
+                offset: const Offset(0, 4),
+              ),
+            ],
           ),
           child: Padding(
             padding: const EdgeInsets.all(24.0),
@@ -302,27 +343,11 @@ class _TypesScreenState extends State<TypesScreen> with SingleTickerProviderStat
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                      decoration: BoxDecoration(
-                        color: Colors.grey[100],
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Text(
-                        type.code,
-                        style: TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.grey[700],
-                          letterSpacing: 2,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 12),
+                    const SizedBox(height: 20),
                     Text(
                       type.name,
                       style: TextStyle(
-                        fontSize: 18,
+                        fontSize: 20,
                         fontWeight: FontWeight.bold,
                         color: Colors.grey[900],
                         height: 1.3,
@@ -330,6 +355,8 @@ class _TypesScreenState extends State<TypesScreen> with SingleTickerProviderStat
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                     ),
+                    const SizedBox(height: 12),
+                    _buildTypeDescription(part1, part2, part3, accentColor),
                   ],
                 ),
                 Row(
@@ -339,20 +366,67 @@ class _TypesScreenState extends State<TypesScreen> with SingleTickerProviderStat
                       '자세히 보기',
                       style: TextStyle(
                         fontSize: 13,
-                        color: Colors.grey[600],
-                        fontWeight: FontWeight.w500,
+                        color: Colors.grey[900],
+                        fontWeight: FontWeight.w600,
                       ),
                     ),
                     Icon(
                       Icons.arrow_forward_ios,
                       size: 14,
-                      color: Colors.grey[600],
+                      color: Colors.grey[900],
                     ),
                   ],
                 ),
               ],
             ),
           ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTypeDescription(String part1, String part2, String part3, Color accentColor) {
+    const descriptions = {
+      'A': '활발한 사교형',
+      'B': '소수 정예형',
+      'C': '균형형',
+      '가': '안정 애착형',
+      '나': '불안-집착형',
+      '다': '회피 독립형',
+      '1': '직면 해결형',
+      '2': '회피/유지형',
+      '3': '협력/조율형',
+    };
+    
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildDescriptionChip(descriptions[part1]!, accentColor),
+        const SizedBox(width: 6),
+        _buildDescriptionChip(descriptions[part2]!, accentColor),
+        const SizedBox(width: 6),
+        _buildDescriptionChip(descriptions[part3]!, accentColor),
+      ],
+    );
+  }
+
+  Widget _buildDescriptionChip(String text, Color accentColor) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+      decoration: BoxDecoration(
+        color: Colors.grey[50],
+        borderRadius: BorderRadius.circular(6),
+        border: Border.all(
+          color: Colors.grey[300]!,
+          width: 1,
+        ),
+      ),
+      child: Text(
+        text,
+        style: TextStyle(
+          fontSize: 12,
+          color: Colors.grey[700],
+          fontWeight: FontWeight.w500,
         ),
       ),
     );
