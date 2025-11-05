@@ -16,7 +16,7 @@ class _TestScreenState extends State<TestScreen> with TickerProviderStateMixin {
   int currentPageIndex = 0;
   bool isLoading = true;
   
-  static const int questionsPerPage = 5;
+  static const int questionsPerPage = 12;
   late AnimationController _fadeController;
   late Animation<double> _fadeAnimation;
   late ScrollController _scrollController;

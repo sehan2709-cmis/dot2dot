@@ -1,7 +1,11 @@
+import 'dart:ui';
+import 'package:dot2dot/screens/test_screen.dart';
 import 'package:flutter/material.dart';
 import '../services/type_name_service.dart';
 import '../services/question_service.dart';
 import '../constants/colors.dart';
+import '../services/compatibility_service.dart';
+import 'home_screen.dart';
 
 class TypeDetailScreen extends StatefulWidget {
   final String typeCode;
@@ -145,45 +149,46 @@ class _TypeDetailScreenState extends State<TypeDetailScreen> with TickerProvider
 
     if (isLoading) {
       return Scaffold(
-        body: Container(
-
-          decoration: BoxDecoration(
-            color: Colors.grey[50],
-          ),
-          child: SafeArea(
-            child: Column(
-              children: [
-                AppBar(
-                  backgroundColor: Colors.transparent,
-                  foregroundColor: Colors.grey[900],
-                  elevation: 0,
-                ),
-                Expanded(
-                  child: Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        SizedBox(
-                          width: 50,
-                          height: 50,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 3,
-                            valueColor: AlwaysStoppedAnimation<Color>(accentColor),
+        body: SingleChildScrollView(
+          child: Container(
+            decoration: BoxDecoration(
+              color: Colors.grey[50],
+            ),
+            child: SafeArea(
+              child: Column(
+                children: [
+                  AppBar(
+                    backgroundColor: Colors.transparent,
+                    foregroundColor: Colors.grey[900],
+                    elevation: 0,
+                  ),
+                  Expanded(
+                    child: Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          SizedBox(
+                            width: 50,
+                            height: 50,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 3,
+                              valueColor: AlwaysStoppedAnimation<Color>(accentColor),
+                            ),
                           ),
-                        ),
-                        const SizedBox(height: 24),
-                        Text(
-                          '유형 정보를 불러오는 중...',
-                          style: TextStyle(
-                            color: Colors.grey[600],
-                            fontSize: 16,
+                          const SizedBox(height: 24),
+                          Text(
+                            '유형 정보를 불러오는 중...',
+                            style: TextStyle(
+                              color: Colors.grey[600],
+                              fontSize: 16,
+                            ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ),
@@ -278,6 +283,9 @@ class _TypeDetailScreenState extends State<TypeDetailScreen> with TickerProvider
                             position: _slideAnimation,
                             child: Column(
                               children: [
+                                _buildCompatibilitySection(accentColor),
+                                const SizedBox(height: 16),
+                                
                                 _buildResultSection(
                                   '인간관계 패턴 분석',
                                   sections['pattern']!,
@@ -427,6 +435,410 @@ class _TypeDetailScreenState extends State<TypeDetailScreen> with TickerProvider
     );
   }
 
+  Widget _buildCompatibilitySection(Color accentColor) {
+    final compatibility = CompatibilityService.getCompatibility(widget.typeCode);
+    if (compatibility == null) return const SizedBox.shrink();
+    
+    return Column(
+      children: [
+        const SizedBox(height: 24),
+        Card(
+          elevation: 0,
+          color: Colors.white,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(32.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Icon(Icons.handshake, size: 28, color: Colors.grey[900]),
+                    const SizedBox(width: 12),
+                    Text(
+                      '궁합 분석',
+                      style: TextStyle(
+                        color: Colors.grey[900],
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 28),
+                
+                // 최고의 궁합
+                _buildCompatibilityItem(
+                  '최고의 궁합',
+                  compatibility.bestMatch,
+                  Colors.green[300]!,
+                  Icons.star,
+                  accentColor,
+                ),
+                const SizedBox(height: 16),
+                
+                // 최악의 궁합
+                _buildCompatibilityItem(
+                  '최악의 궁합',
+                  compatibility.worstMatch,
+                  Colors.red[300]!,
+                  Icons.warning_amber,
+                  accentColor,
+                ),
+                const SizedBox(height: 24),
+                
+                const Divider(height: 32),
+                
+                // 잠긴 연인 궁합 섹션
+                _buildLockedLoverSection(accentColor),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildLockedLoverSection(Color accentColor) {
+    return Stack(
+      children: [
+        // Blurred content
+        ClipRRect(
+          borderRadius: BorderRadius.circular(12),
+          child: BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
+            child: Container(
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                color: Colors.grey[100]!.withOpacity(0.5),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: Colors.grey[300]!,
+                  width: 1,
+                ),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Icon(Icons.favorite, size: 24, color: Colors.grey[400]),
+                      const SizedBox(width: 12),
+                      Text(
+                        '연인 궁합',
+                        style: TextStyle(
+                          color: Colors.grey[400],
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  
+                  // 가짜 블러된 항목들
+                  _buildBlurredItem('연인 (Best) 1', Icons.favorite),
+                  const SizedBox(height: 12),
+                  _buildBlurredItem('연인 (Best) 2', Icons.favorite),
+                  const SizedBox(height: 12),
+                  _buildBlurredItem('연인 (Worst) 1', Icons.heart_broken),
+                  const SizedBox(height: 12),
+                  _buildBlurredItem('연인 (Worst) 2', Icons.heart_broken),
+                ],
+              ),
+            ),
+          ),
+        ),
+        
+        // 잠금 오버레이
+        Positioned.fill(
+          child: Container(
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.7),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Material(
+              color: Colors.transparent,
+              child: InkWell(
+                onTap: () {
+                  _showTestPromptDialog();
+                },
+                borderRadius: BorderRadius.circular(12),
+                child: Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: accentColor.withOpacity(0.1),
+                          shape: BoxShape.circle,
+                        ),
+                        child: Icon(
+                          Icons.lock_outline,
+                          size: 48,
+                          color: accentColor,
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      Text(
+                        '연인 궁합 보기',
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.grey[900],
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        '유형 검사를 완료하면\n자세한 연인 궁합을 확인할 수 있어요',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: Colors.grey[600],
+                          height: 1.5,
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 24,
+                          vertical: 12,
+                        ),
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            colors: [
+                              accentColor.withOpacity(0.8),
+                              accentColor,
+                            ],
+                          ),
+                          borderRadius: BorderRadius.circular(24),
+                          boxShadow: [
+                            BoxShadow(
+                              color: accentColor.withOpacity(0.3),
+                              blurRadius: 10,
+                              offset: const Offset(0, 4),
+                            ),
+                          ],
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: const [
+                            Text(
+                              '테스트하러 가기',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 15,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            SizedBox(width: 8),
+                            Icon(
+                              Icons.arrow_forward,
+                              color: Colors.white,
+                              size: 18,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildBlurredItem(String label, IconData icon) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.grey[200],
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 40,
+            height: 40,
+            decoration: BoxDecoration(
+              color: Colors.grey[300],
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Icon(icon, color: Colors.grey[400], size: 22),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  height: 12,
+                  width: 80,
+                  decoration: BoxDecoration(
+                    color: Colors.grey[300],
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                ),
+                const SizedBox(height: 6),
+                Container(
+                  height: 16,
+                  width: 150,
+                  decoration: BoxDecoration(
+                    color: Colors.grey[400],
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showTestPromptDialog() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+        ),
+        title: Row(
+          children: [
+            Icon(
+              Icons.lock_open,
+              color: AppColors.getTypeAccentColor(widget.typeCode),
+            ),
+            const SizedBox(width: 12),
+            const Text('연인 궁합 확인하기'),
+          ],
+        ),
+        content: const Text(
+          '연인 궁합 정보는 유형 검사를 완료한 사용자에게만 제공됩니다.\n\n'
+          '지금 테스트를 시작하시겠어요?',
+          style: TextStyle(height: 1.6),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text(
+              '취소',
+              style: TextStyle(color: Colors.grey[600]),
+            ),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.pop(context); // 다이얼로그 닫기
+              // 홈 화면으로 이동
+              Navigator.pushAndRemoveUntil(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => TestScreen(),
+                ),
+                (route) => false,
+              );
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.getTypeAccentColor(widget.typeCode),
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+              padding: const EdgeInsets.symmetric(
+                horizontal: 20,
+                vertical: 12,
+              ),
+            ),
+            child: const Text('테스트 시작'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCompatibilityItem(
+    String label, 
+    String typeCode, 
+    Color color, 
+    IconData icon,
+    Color accentColor,
+  ) {
+    final typeName = TypeNameService.getTypeName(typeCode);
+    
+    return InkWell(
+      onTap: () {
+        // 같은 화면을 새로운 유형으로 이동
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (context) => TypeDetailScreen(typeCode: typeCode),
+          ),
+        );
+      },
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Colors.grey[50],
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: color.withOpacity(0.5),
+            width: 2,
+          ),
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 40,
+              height: 40,
+              decoration: BoxDecoration(
+                color: color.withOpacity(0.2),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Icon(icon, color: color, size: 22),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    label,
+                    style: TextStyle(
+                      color: Colors.grey[700],
+                      fontSize: 12,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    typeName,
+                    style: TextStyle(
+                      color: color,
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Icon(
+              Icons.arrow_forward_ios,
+              color: color.withOpacity(0.7),
+              size: 18,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget _buildTypeChip(String text) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
@@ -530,5 +942,4 @@ class _TypeDetailScreenState extends State<TypeDetailScreen> with TickerProvider
       ),
     );
   }
-  
 }

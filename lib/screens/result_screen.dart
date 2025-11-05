@@ -136,27 +136,29 @@ class _ResultScreenState extends State<ResultScreen> with TickerProviderStateMix
     if (isLoading) {
       return Scaffold(
         backgroundColor: Colors.grey[50],
-        body: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              SizedBox(
-                width: 50,
-                height: 50,
-                child: CircularProgressIndicator(
-                  strokeWidth: 3,
-                  valueColor: AlwaysStoppedAnimation<Color>(Colors.grey[800]!),
+        body: SingleChildScrollView(
+          child: Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                SizedBox(
+                  width: 50,
+                  height: 50,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 3,
+                    valueColor: AlwaysStoppedAnimation<Color>(Colors.grey[800]!),
+                  ),
                 ),
-              ),
-              const SizedBox(height: 24),
-              Text(
-                '결과를 분석하는 중...',
-                style: TextStyle(
-                  color: Colors.grey[600],
-                  fontSize: 16,
+                const SizedBox(height: 24),
+                Text(
+                  '결과를 분석하는 중...',
+                  style: TextStyle(
+                    color: Colors.grey[600],
+                    fontSize: 16,
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       );
