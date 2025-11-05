@@ -106,8 +106,9 @@ class _ResultScreenState extends State<ResultScreen> with TickerProviderStateMix
         continue;
       }
 
-      if (currentSection.isNotEmpty && trimmed.isNotEmpty && !trimmed.startsWith('[')) {
-        sections[currentSection] = sections[currentSection]! + trimmed + '\n';
+      if (currentSection.isNotEmpty && !trimmed.startsWith('[')) {
+        // 원본 line을 사용하여 들여쓰기 유지
+        sections[currentSection] = sections[currentSection]! + line + '\n';
       }
     }
 
@@ -422,8 +423,9 @@ class _ResultScreenState extends State<ResultScreen> with TickerProviderStateMix
                 ],
               ),
               const SizedBox(height: 20),
-              Text(
-                content.trim(),
+              // SelectableText로 변경하고 줄바꿈 유지
+              SelectableText(
+                content,
                 style: TextStyle(
                   fontSize: 16,
                   height: 1.7,

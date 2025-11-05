@@ -1,4 +1,4 @@
-import 'package:dot2dot/screens/types_screen.dart';
+import 'package:dot2dot/screens/types.screen.dart';
 import 'package:flutter/material.dart';
 import 'test_screen.dart';
 import 'about_screen.dart';
@@ -201,7 +201,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder: (context) => const TypesScreen(),
+                                builder: (context) => TypesScreen(),
                               ),
                             );
                           },
