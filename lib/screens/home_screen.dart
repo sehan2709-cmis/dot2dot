@@ -1,4 +1,4 @@
-import 'package:dot2dot/screens/types.screen.dart';
+import 'package:dot2dot/screens/types_screen.dart';
 import 'package:flutter/material.dart';
 import 'test_screen.dart';
 import 'about_screen.dart';

@@ -59,13 +59,39 @@ class _TypeDetailScreenState extends State<TypeDetailScreen> with TickerProvider
     super.dispose();
   }
 
+  // Future<void> _loadResult() async {
+  //   final content = await QuestionService.loadResult(widget.typeCode);
+  //   setState(() {
+  //     resultContent = content;
+  //     isLoading = false;
+  //   });
+    
+  //   _fadeController.forward();
+  //   Future.delayed(const Duration(milliseconds: 200), () {
+  //     _slideController.forward();
+  //   });
+  // }
+
   Future<void> _loadResult() async {
-    final content = await QuestionService.loadResult(widget.typeCode);
+    final raw = await QuestionService.loadResult(widget.typeCode);
+
+    // 1) 윈도우/맥/리눅스 줄바꿈 통일
+    // 2) 파일에 리터럴 "\n" (백슬래시 + n) 이 들어있을 경우 실제 줄바꿈으로 변환
+    // 3) 혹시 "\r" 만 있는 경우도 처리
+    String content = raw
+        .replaceAll(RegExp(r'\\r\\n'), '\n') // 리터럴 "\r\n" -> 실제 줄바꿈
+        .replaceAll(RegExp(r'\\n'), '\n')    // 리터럴 "\n" -> 실제 줄바꿈
+        .replaceAll(RegExp(r'\r\n?'), '\n'); // CRLF or CR -> LF
+
+    // (디버그) 콘솔에 실제 들어온 텍스트 확인하고 싶으면 주석 해제
+    // print('--- RAW START ---\n$raw\n--- RAW END ---');
+    // print('--- NORMALIZED START ---\n$content\n--- NORMALIZED END ---');
+
     setState(() {
       resultContent = content;
       isLoading = false;
     });
-    
+
     _fadeController.forward();
     Future.delayed(const Duration(milliseconds: 200), () {
       _slideController.forward();
@@ -81,36 +107,85 @@ class _TypeDetailScreenState extends State<TypeDetailScreen> with TickerProvider
       'questions': '',
     };
 
+    // OS별 모든 줄바꿈을 통일한 뒤 라인으로 분할
     final lines = content.split('\n');
     String currentSection = '';
 
     for (var line in lines) {
-      final trimmed = line.trim();
-      
-      if (trimmed.startsWith('[인간관계 패턴')) {
+      final lineTrimmedForHeader = line.trim();
+
+      if (lineTrimmedForHeader.startsWith('[인간관계 패턴')) {
         currentSection = 'pattern';
         continue;
-      } else if (trimmed.startsWith('[좋아하는 관계')) {
+      } else if (lineTrimmedForHeader.startsWith('[좋아하는 관계')) {
         currentSection = 'relationships';
         continue;
-      } else if (trimmed.startsWith('[장점')) {
+      } else if (lineTrimmedForHeader.startsWith('[장점')) {
         currentSection = 'strengths';
         continue;
-      } else if (trimmed.startsWith('[단점')) {
+      } else if (lineTrimmedForHeader.startsWith('[단점')) {
         currentSection = 'weaknesses';
         continue;
-      } else if (trimmed.startsWith('[스스로에게')) {
+      } else if (lineTrimmedForHeader.startsWith('[스스로에게')) {
         currentSection = 'questions';
         continue;
       }
 
-      if (currentSection.isNotEmpty && trimmed.isNotEmpty && !trimmed.startsWith('[')) {
-        sections[currentSection] = sections[currentSection]! + trimmed + '\n';
+      if (currentSection.isNotEmpty) {
+        // 헤더 라인이 아니라면 라인을 그대로 추가 (빈 줄은 그대로 유지)
+        // 단, 파일 내부의 '[...' 같은 다른 섹션 헤더가 섞여있으면 무시
+        if (!lineTrimmedForHeader.startsWith('[')) {
+          sections[currentSection] = sections[currentSection]! + line + '\n';
+        }
       }
     }
 
+    // 각 섹션 끝의 불필요한 마지막 개행 하나 제거 (선택)
+    sections.updateAll((k, v) => v.endsWith('\n') ? v.substring(0, v.length - 1) : v);
+
     return sections;
   }
+
+
+  // Map<String, String> _parseResultContent(String content) {
+  //   Map<String, String> sections = {
+  //     'pattern': '',
+  //     'relationships': '',
+  //     'strengths': '',
+  //     'weaknesses': '',
+  //     'questions': '',
+  //   };
+
+  //   final lines = content.split('\n');
+  //   String currentSection = '';
+
+  //   for (var line in lines) {
+  //     final trimmed = line; //.trim();
+      
+  //     if (trimmed.startsWith('[인간관계 패턴')) {
+  //       currentSection = 'pattern';
+  //       continue;
+  //     } else if (trimmed.startsWith('[좋아하는 관계')) {
+  //       currentSection = 'relationships';
+  //       continue;
+  //     } else if (trimmed.startsWith('[장점')) {
+  //       currentSection = 'strengths';
+  //       continue;
+  //     } else if (trimmed.startsWith('[단점')) {
+  //       currentSection = 'weaknesses';
+  //       continue;
+  //     } else if (trimmed.startsWith('[스스로에게')) {
+  //       currentSection = 'questions';
+  //       continue;
+  //     }
+
+  //     if (currentSection.isNotEmpty && trimmed.isNotEmpty && !trimmed.startsWith('[')) {
+  //       sections[currentSection] = sections[currentSection]! + trimmed + '\n';
+  //     }
+  //   }
+
+  //   return sections;
+  // }
 
   String _getTypeDescription(String type) {
     const descriptions = {
@@ -207,23 +282,23 @@ class _TypeDetailScreenState extends State<TypeDetailScreen> with TickerProvider
                             ),
                             textAlign: TextAlign.center,
                           ),
-                          const SizedBox(height: 16),
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                            decoration: BoxDecoration(
-                              color: Colors.white.withOpacity(0.15),
-                              borderRadius: BorderRadius.circular(20),
-                            ),
-                            child: Text(
-                              widget.typeCode,
-                              style: TextStyle(
-                                color: Colors.grey[300],
-                                fontSize: 20,
-                                fontWeight: FontWeight.bold,
-                                letterSpacing: 4,
-                              ),
-                            ),
-                          ),
+                          // const SizedBox(height: 16),
+                          // Container(
+                          //   padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                          //   decoration: BoxDecoration(
+                          //     color: Colors.white.withOpacity(0.15),
+                          //     borderRadius: BorderRadius.circular(20),
+                          //   ),
+                          //   child: Text(
+                          //     widget.typeCode,
+                          //     style: TextStyle(
+                          //       color: Colors.grey[300],
+                          //       fontSize: 20,
+                          //       fontWeight: FontWeight.bold,
+                          //       letterSpacing: 4,
+                          //     ),
+                          //   ),
+                          // ),
                           const SizedBox(height: 28),
                           _buildTypeChip(
                             '관계 범위: ${_getTypeDescription(part1)}',
